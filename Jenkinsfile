@@ -66,14 +66,21 @@ node('maven') {
     echo "New Tag: ${newTag}"
     sh "cp ./target/openshift-tasks.war ROOT.war"
     sh "oc start-build --from-file ROOT.war tasks --follow"
-    sh "oc tag nho-tasks-dev/tasks:latest nho-tasks-dev/tasks:release-candidate{-version}"
+    sh "oc tag nho-tasks-dev/tasks:latest nho-tasks-dev/tasks:TestingCandidate-$version"
   }
 
   // Deploy the built image to the Development Environment. Pay close attention to WHICH image you are deploying.
   // Make sure it is the one you just tagged in the previous step. You may need to patch the deployment configuration
   // of your application.
   stage('Deploy to Dev') {
-    // TBD
+    sh "oc project nho-tasks-dev"
+    sh "oc patch dc tasks --patch '{\"spec\": { \"triggers\": [ { \"type\": \"ImageChange\", \"imageChangeParams\": { \"containerNames\": [ \"tasks\" ], \"from\": { \"kind\": \"ImageStreamTag\", \"namespace\": \"nho-tasks-dev\", \"name\": \"tasks:TestingCandidate-$version\"}}}]}}' -n nho-tasks-dev"
+
+    openshiftDeploy depCfg: 'tasks', namespace: 'xyz-tasks-dev', verbose: 'false', waitTime: '', waitUnit: 'sec'
+    openshiftVerifyDeployment depCfg: 'tasks', namespace: 'xyz-tasks-dev', replicaCount: '1', verbose: 'false', verifyReplicaCount: 'false', waitTime: '', waitUnit: 'sec'
+    openshiftVerifyService namespace: 'xyz-tasks-dev', svcName: 'tasks', verbose: 'false'
+  }
+
   }
 
   // Run some integration tests (see the openshift-tasks Github Repository README.md for ideas).
