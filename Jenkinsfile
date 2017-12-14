@@ -11,7 +11,7 @@ node('maven') {
   stage('Checkout Source') {
     // Get Source Code from SCM (Git) as configured in the Jenkins Project
     // Next line for inline script, "checkout scm" for Jenkinsfile from Gogs
-    //git 'http://gogs11-nho-gogs.apps.248d.openshift.opentlc.com/nho/openshift-tasks-private.git'
+    git 'http://gogs11-nho-gogs.apps.248d.openshift.opentlc.com/nho/openshift-tasks-private.git'
     //checkout scm
   }
 
