@@ -131,6 +131,7 @@ node('maven') {
     sh 'oc get route tasks -n nho-tasks-prod > oc_out.txt'
     oc_out = readFile('oc_out.txt')
     echo "Current route configuration: " + oc_out
+    sh 'oc scale --replicas=0 dc active'
   }
 }
 
