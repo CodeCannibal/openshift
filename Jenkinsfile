@@ -35,7 +35,7 @@ node('maven') {
 
   // Using Maven call SonarQube for Code Analysis
   stage('Code Analysis') {
-    def mvnCmd = "mvn -s ./nexus_openshift_settings.xml sonar:sonar -Dsonar.host.url=http://nho-sonarqube2-nho-nexus.apps.248d.openshift.opentlc.com'
+    def mvnCmd = "mvn -s ./nexus_openshift_settings.xml sonar:sonar -Dsonar.host.url=http://nho-sonarqube2-nho-nexus.apps.248d.openshift.opentlc.com"
   }
 
   // Publish the latest war file to Nexus. This needs to go into <nexusurl>/repository/releases.
