@@ -131,8 +131,9 @@ node('maven') {
     sh 'oc get route tasks -n nho-tasks-prod > oc_out.txt'
     oc_out = readFile('oc_out.txt')
     echo "Current route configuration: " + oc_out
-    sh "oc scale --replicas=0 dc " + active
   }
+  stage('Scale down the inactive pod') {
+      sh "oc scale --replicas=0 dc " + active
 }
 
 // Convenience Functions to read variables from the pom.xml
