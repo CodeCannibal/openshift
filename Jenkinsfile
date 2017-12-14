@@ -62,7 +62,18 @@ node('maven') {
   //    for the .s2i/bin/assemble script to retrieve the war file from the location in the .s2i/environment file.
   // Also tag the image with "TestingCandidate-${version}" - e.g. TestingCandidate-1.5
   stage('Build OpenShift Image') {
-    sh "oc start-build --from-file http://nexus3.nho-nexus.svc:8081/repository/releases/org/jboss/quickstarts/eap/jboss-tasks-rs/1.4/jboss-tasks-rs-1.4.war tasks"
+    steps {
+                  sh "rm -rf oc-build && mkdir -p oc-build/deployments"
+                  sh "cp target/openshift-tasks.war oc-build/deployments/ROOT.war"
+                  
+                  script {
+                    openshift.withCluster() {
+                      openshift.withProject(env.DEV_PROJECT) {
+                        openshift.selector("bc", "tasks").startBuild("--from-dir=oc-build", "--wait=true")
+                      }
+                    }
+                  }
+                }
   }
 
   // Deploy the built image to the Development Environment. Pay close attention to WHICH image you are deploying.
