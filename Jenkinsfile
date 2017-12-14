@@ -25,17 +25,17 @@ node('maven') {
   // Using Maven build the war file
   // Do not run tests in this step
   stage('Build war') {
-    mvnCmd package -DskipTests
+    'mvnCmd package -DskipTests'
   }
 
   // Using Maven run the unit tests
   stage('Unit Tests') {
-    mvnCmd test
+    'mvnCmd test'
   }
 
   // Using Maven call SonarQube for Code Analysis
   stage('Code Analysis') {
-    mvnCmd sonar:sonar -Dsonar.host.url=http://nho-sonarqube2-nho-nexus.apps.248d.openshift.opentlc.com
+    'mvnCmd sonar:sonar -Dsonar.host.url=http://nho-sonarqube2-nho-nexus.apps.248d.openshift.opentlc.com'
   }
 
   // Publish the latest war file to Nexus. This needs to go into <nexusurl>/repository/releases.
@@ -53,7 +53,7 @@ node('maven') {
   //   push to Gig/Gogs will fail in case the version number didn't change. ${BUILD_NUMBER} is one of the Jenkins built-in
   //   variables.
   stage('Publish to Nexus') {
-    mvnCmd deploy -DskipTests -DaltRepository TestingCandidate-${version}
+    'mvnCmd deploy -DskipTests -DaltRepository TestingCandidate-${version}'
   }
 
   // Build the OpenShift Image in OpenShift. 
