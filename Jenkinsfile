@@ -81,8 +81,6 @@ node('maven') {
     openshiftVerifyService namespace: 'xyz-tasks-dev', svcName: 'tasks', verbose: 'false'
   }
 
-  }
-
   // Run some integration tests (see the openshift-tasks Github Repository README.md for ideas).
   // Once the tests succeed tag the image as ProdReady-${version}
   stage('Integration Test') {
