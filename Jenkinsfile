@@ -107,6 +107,7 @@ node('maven') {
     }
     echo "Active svc: " + active
     echo "Dest svc:   " + dest
+    sh "oc scale --replicas=1 dc " + dest
   }
   stage('Deploy new Version') {
     echo "Deploying to ${dest}"
