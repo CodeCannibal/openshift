@@ -88,7 +88,7 @@ node('maven') {
     echo "New Tag: ${newTag}"
 
     // Replace xyz-tasks-dev with the name of your dev project
-    openshiftTag alias: 'false', destStream: 'tasks', destTag: newTag, destinationNamespace: 'xyz-tasks-dev', namespace: 'xyz-tasks-dev', srcStream: 'tasks', srcTag: 'latest', verbose: 'false'
+    openshiftTag alias: 'false', destStream: 'tasks', destTag: newTag, destinationNamespace: 'nho-tasks-dev', namespace: 'nho-tasks-dev', srcStream: 'tasks', srcTag: 'latest', verbose: 'false'
   }
 
  // Blue/Green Deployment into Production
@@ -99,8 +99,8 @@ node('maven') {
   stage('Prep Production Deployment') {
     // Replace xyz-tasks-dev and xyz-tasks-prod with
     // your project names
-    sh "oc project xyz-tasks-prod"
-    sh "oc get route tasks -n xyz-tasks-prod -o jsonpath='{ .spec.to.name }' > activesvc.txt"
+    sh "oc project nho-tasks-prod"
+    sh "oc get route tasks -n nho-tasks-prod -o jsonpath='{ .spec.to.name }' > activesvc.txt"
     active = readFile('activesvc.txt').trim()
     if (active == "tasks-green") {
       dest = "tasks-blue"
@@ -115,17 +115,22 @@ node('maven') {
     // the latest ProdReady-${version} Image.
     // Replace xyz-tasks-dev and xyz-tasks-prod with
     // your project names.
-    sh "oc patch dc ${dest} --patch '{\"spec\": { \"triggers\": [ { \"type\": \"ImageChange\", \"imageChangeParams\": { \"containerNames\": [ \"$dest\" ], \"from\": { \"kind\": \"ImageStreamTag\", \"namespace\": \"xyz-tasks-dev\", \"name\": \"tasks:ProdReady-$version\"}}}]}}' -n xyz-tasks-prod"
+    sh "oc patch dc ${dest} --patch '{\"spec\": { \"triggers\": [ { \"type\": \"ImageChange\", \"imageChangeParams\": { \"containerNames\": [ \"$dest\" ], \"from\": { \"kind\": \"ImageStreamTag\", \"namespace\": \"nho-tasks-dev\", \"name\": \"tasks:ProdReady-$version\"}}}]}}' -n nho-tasks-prod"
 
-    openshiftDeploy depCfg: dest, namespace: 'xyz-tasks-prod', verbose: 'false', waitTime: '', waitUnit: 'sec'
-    openshiftVerifyDeployment depCfg: dest, namespace: 'xyz-tasks-prod', replicaCount: '1', verbose: 'false', verifyReplicaCount: 'true', waitTime: '', waitUnit: 'sec'
-    openshiftVerifyService namespace: 'xyz-tasks-prod', svcName: dest, verbose: 'false'
+    openshiftDeploy depCfg: dest, namespace: 'nho-tasks-prod', verbose: 'false', waitTime: '', waitUnit: 'sec'
+    openshiftVerifyDeployment depCfg: dest, namespace: 'nho-tasks-prod', replicaCount: '1', verbose: 'false', verifyReplicaCount: 'true', waitTime: '', waitUnit: 'sec'
+    openshiftVerifyService namespace: 'nho-tasks-prod', svcName: dest, verbose: 'false'
   }
     
   // Once approved (input step) switch production over to the new version.
   stage('Switch over to new Version') {
     input "Switch Production?"
-    // TBD
+    // Replace xyz-tasks-prod with the name of your
+    // production project
+    sh 'oc patch route tasks -n nho-tasks-prod -p \'{"spec":{"to":{"name":"' + dest + '"}}}\''
+    sh 'oc get route tasks -n nho-tasks-prod > oc_out.txt'
+    oc_out = readFile('oc_out.txt')
+    echo "Current route configuration: " + oc_out
   }
 }
 
