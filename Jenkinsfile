@@ -62,7 +62,7 @@ node('maven') {
   //    for the .s2i/bin/assemble script to retrieve the war file from the location in the .s2i/environment file.
   // Also tag the image with "TestingCandidate-${version}" - e.g. TestingCandidate-1.5
   stage('Build OpenShift Image') {
-    oc start-build --from-file ROOT.war tasks
+    sh "oc start-build --from-file ROOT.war tasks"
   }
 
   // Deploy the built image to the Development Environment. Pay close attention to WHICH image you are deploying.
