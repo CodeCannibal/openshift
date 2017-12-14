@@ -84,23 +84,44 @@ node('maven') {
   // Run some integration tests (see the openshift-tasks Github Repository README.md for ideas).
   // Once the tests succeed tag the image as ProdReady-${version}
   stage('Integration Test') {
-    // TBD
+    def newTag = "ProdReady-${version}"
+    echo "New Tag: ${newTag}"
+
+    // Replace xyz-tasks-dev with the name of your dev project
+    openshiftTag alias: 'false', destStream: 'tasks', destTag: newTag, destinationNamespace: 'xyz-tasks-dev', namespace: 'xyz-tasks-dev', srcStream: 'tasks', srcTag: 'latest', verbose: 'false'
   }
 
-  // Blue/Green Deployment into Production
+ // Blue/Green Deployment into Production
   // -------------------------------------
-  // Next two stages could be one.
-  // Make sure to deploy the right version. If green is active then deploy blue, and vice versa.
-  // You will need to figure out which application is active and set the target to the other.
-  stage('Prep Production Deployment') {
-    // TBD
-  }
-  // Deploy the ProdReady-${version} image. Make sure this is the actual tagged image deployed!
-  // Do not activate the new version yet.
-  stage('Deploy new Version') {
-    // TBD
-  }
+  def dest   = "tasks-green"
+  def active = ""
 
+  stage('Prep Production Deployment') {
+    // Replace xyz-tasks-dev and xyz-tasks-prod with
+    // your project names
+    sh "oc project xyz-tasks-prod"
+    sh "oc get route tasks -n xyz-tasks-prod -o jsonpath='{ .spec.to.name }' > activesvc.txt"
+    active = readFile('activesvc.txt').trim()
+    if (active == "tasks-green") {
+      dest = "tasks-blue"
+    }
+    echo "Active svc: " + active
+    echo "Dest svc:   " + dest
+  }
+  stage('Deploy new Version') {
+    echo "Deploying to ${dest}"
+
+    // Patch the DeploymentConfig so that it points to
+    // the latest ProdReady-${version} Image.
+    // Replace xyz-tasks-dev and xyz-tasks-prod with
+    // your project names.
+    sh "oc patch dc ${dest} --patch '{\"spec\": { \"triggers\": [ { \"type\": \"ImageChange\", \"imageChangeParams\": { \"containerNames\": [ \"$dest\" ], \"from\": { \"kind\": \"ImageStreamTag\", \"namespace\": \"xyz-tasks-dev\", \"name\": \"tasks:ProdReady-$version\"}}}]}}' -n xyz-tasks-prod"
+
+    openshiftDeploy depCfg: dest, namespace: 'xyz-tasks-prod', verbose: 'false', waitTime: '', waitUnit: 'sec'
+    openshiftVerifyDeployment depCfg: dest, namespace: 'xyz-tasks-prod', replicaCount: '1', verbose: 'false', verifyReplicaCount: 'true', waitTime: '', waitUnit: 'sec'
+    openshiftVerifyService namespace: 'xyz-tasks-prod', svcName: dest, verbose: 'false'
+  }
+    
   // Once approved (input step) switch production over to the new version.
   stage('Switch over to new Version') {
     input "Switch Production?"
