@@ -135,6 +135,7 @@ node('maven') {
   }
   stage('Scale down the inactive pod') {
       sh "oc scale --replicas=0 dc " + active
+ } 
 }
 
 // Convenience Functions to read variables from the pom.xml
