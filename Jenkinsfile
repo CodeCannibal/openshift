@@ -66,6 +66,7 @@ node('maven') {
     echo "New Tag: ${newTag}"
     sh "cp ./target/openshift-tasks.war ROOT.war"
     sh "oc start-build --from-file ROOT.war tasks --follow"
+    sh "oc tag nho-tasks-dev/tasks:latest nho-tasks-dev/tasks:release-candidate{-version}
   }
 
   // Deploy the built image to the Development Environment. Pay close attention to WHICH image you are deploying.
