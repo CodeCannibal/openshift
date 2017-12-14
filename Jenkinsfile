@@ -53,7 +53,7 @@ node('maven') {
   //   push to Gig/Gogs will fail in case the version number didn't change. ${BUILD_NUMBER} is one of the Jenkins built-in
   //   variables.
   stage('Publish to Nexus') {
-    sh "$mvnCmd deploy -DskipTests -DaltDeploymentRepository=nexus::default::http://nexus3.nho-nexus.svc/repository/releases"
+    sh "$mvnCmd deploy -DskipTests -DaltDeploymentRepository=nexus::default::http://nexus3.nho-nexus.svc:8081/repository/releases"
   }
 
   // Build the OpenShift Image in OpenShift. 
@@ -62,7 +62,7 @@ node('maven') {
   //    for the .s2i/bin/assemble script to retrieve the war file from the location in the .s2i/environment file.
   // Also tag the image with "TestingCandidate-${version}" - e.g. TestingCandidate-1.5
   stage('Build OpenShift Image') {
-    sh "oc start-build --from-file http://nexus3.nho-nexus.svc/repository/releases/org/jboss/quickstarts/eap/jboss-tasks-rs/1.4/jboss-tasks-rs-1.4.war tasks"
+    sh "oc start-build --from-file http://nexus3.nho-nexus.svc:8081/repository/releases/org/jboss/quickstarts/eap/jboss-tasks-rs/1.4/jboss-tasks-rs-1.4.war tasks"
   }
 
   // Deploy the built image to the Development Environment. Pay close attention to WHICH image you are deploying.
