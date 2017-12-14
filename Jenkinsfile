@@ -53,7 +53,7 @@ node('maven') {
   //   push to Gig/Gogs will fail in case the version number didn't change. ${BUILD_NUMBER} is one of the Jenkins built-in
   //   variables.
   stage('Publish to Nexus') {
-    sh "$mvnCmd deploy -DskipTests -DaltRepository releaseRepository::default::http://nexus3-nho-nexus.apps.248d.openshift.opentlc.com/repository/releases"
+    sh "$mvnCmd deploy -DskipTests -DaltRepository=http://nexus3-nho-nexus.apps.248d.openshift.opentlc.com/repository/releases"
   }
 
   // Build the OpenShift Image in OpenShift. 
