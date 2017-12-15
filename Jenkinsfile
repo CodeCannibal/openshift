@@ -134,7 +134,8 @@ node('maven') {
     echo "Current route configuration: " + oc_out
   }
   stage('Scale down the inactive pod') {
-      sh "oc scale --replicas=0 dc " + active
+    input "Shutdown inactive pod:" + dest
+    sh "oc scale --replicas=0 dc " + active
  } 
 }
 
