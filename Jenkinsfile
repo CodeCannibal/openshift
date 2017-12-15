@@ -11,7 +11,7 @@ node('maven') {
   stage('Checkout Source') {
     // Get Source Code from SCM (Git) as configured in the Jenkins Project
     // Next line for inline script, "checkout scm" for Jenkinsfile from Gogs
-    git 'http://gogs11-nho-gogs.apps.248d.openshift.opentlc.com/nho/openshift-tasks-private.git'
+    git 'http://gogs11.nho-gogs.svc:3000/nho/openshift-tasks-private.git'
     //checkout scm
   }
 
@@ -35,7 +35,7 @@ node('maven') {
 
   // Using Maven call SonarQube for Code Analysis
   stage('Code Analysis') {
-    sh "$mvnCmd sonar:sonar -Dsonar.host.url=http://nho-sonarqube2-nho-nexus.apps.248d.openshift.opentlc.com"
+    sh "$mvnCmd sonar:sonar -Dsonar.host.url=http://nho-sonarqube2.nho-nexus.svc:9000"
   }
 
   // Publish the latest war file to Nexus. This needs to go into <nexusurl>/repository/releases.
